@@ -91,6 +91,13 @@ fragment WorkerFields on Worker {
   metadata
 }
 
+fragment StorageBucketFields on StorageBucket {
+  id
+  operatorMetadata {
+    nodeEndpoint
+  }
+}
+
 query getChannelsByIds($ids: [ID!]) {
   channels(where: { id_in: $ids }, limit: 1000) {
     ...ChannelFields
@@ -118,5 +125,16 @@ query getChannelsCategories {
 query getStorageWorkers {
   workers(where: { type_eq: STORAGE }) {
     ...WorkerFields
+  }
+}
+
+query getStorageBuckets {
+  storageBuckets(where: {
+      operatorStatus_json: { isTypeOf_eq: "StorageBucketOperatorStatusActive" }
+      bags_some: { id_eq: BAG }
+      operatorMetadata: { nodeEndpoint_contains: "http" }
+    }
+  ) {
+    ...StorageBucketFields
   }
 }

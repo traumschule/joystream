@@ -86,6 +86,10 @@ export type GetStorageWorkersQueryVariables = Types.Exact<{ [key: string]: never
 
 export type GetStorageWorkersQuery = { workers: Array<WorkerFieldsFragment> }
 
+export type GetStorageBucketQueryVariables = Types.Exact<{ [key: string]: never }>
+
+export type GetStorageBucketQuery = { bagId: BagId }
+
 export const VideoCategoryFields = gql`
   fragment VideoCategoryFields on VideoCategory {
     id
@@ -185,6 +189,14 @@ export const WorkerFields = gql`
   fragment WorkerFields on Worker {
     id
     metadata
+  }
+`
+export const StorageBucketFields = gql`
+  fragment StorageBucketFields on StorageBucket {
+    id
+    operatorMetadata {
+      nodeEndpoint
+    }
   }
 `
 export const GetChannelsByIds = gql`

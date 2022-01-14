@@ -20,6 +20,9 @@ import {
   GetStorageWorkers,
   GetStorageWorkersQuery,
   GetStorageWorkersQueryVariables,
+  GetStorageBuckets,
+  GetStorageBucketsQuery,
+  GetStorageBucketsQueryVariables,
   GetVideoCategories,
   GetVideoCategoriesQuery,
   GetVideoCategoriesQueryVariables,
@@ -119,6 +122,14 @@ export class QueryNodeApi {
       GetStorageWorkers,
       {},
       'workers'
+    )
+  }
+
+  public getStorageBuckets(bagId: string): Promise<StorageBucketFieldsFragment[]> {
+    return this.multipleEntitiesQuery<GetStorageBucketQuery, GetStorageBucketQueryVariables>(
+      GetStorageBuckets,
+      {},
+      bagId
     )
   }
 }

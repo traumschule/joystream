@@ -98,6 +98,12 @@ export class AssetsManager {
     return endpoints
   }
 
+  private static async getGizaStorageBucketPerBagId(queryNodeApi: QueryNodeApi, bagId: string): Promise<string[]> {
+    const workers = await queryNodeApi.getStorageBucket()
+    workers.forEach((w) => w.metadata && endpoints.push(w.metadata))
+    return endpoints
+  }
+
   private tmpAssetPath(contentId: string): string {
     return path.join(this.config.dataDir, 'tmp', contentId)
   }
@@ -229,12 +235,18 @@ export class AssetsManager {
     const {
       config: { uploadSpBucketId, uploadSpEndpoint },
     } = this
+
+    // TODO determine bucket and endpoint
+    //const bag = await api.query.storage.bags({ Dynamic: { Channel: bagId.split(':')[2] } })
+    //const bucket = await getGizaStorageBucketPerBagId(bagId)
+
     const dataObject = await this.api.query.storage.dataObjectsById(
       { Dynamic: { Channel: bagId.split(':')[2] } },
       dataObjectId
     )
     const dataPath = this.assetPath(Buffer.from(dataObject.ipfsContentId.toHex().replace('0x', ''), 'hex').toString())
     if (!fs.existsSync(dataPath)) {
+      // TODO do not bail, download or skip and warn
       throw new Error(`Cannot upload object: ${dataObjectId}: ${dataPath} not found`)
     }
 
@@ -260,7 +272,7 @@ export class AssetsManager {
     } catch (e) {
       uploadSuccesful = false
       const msg = this.reqErrorMessage(e)
-      this.logger.error(`Upload of object ${dataObjectId} to ${uploadSpEndpoint} failed: ${msg}`)
+      this.logger.error(`Uploading object ${dataObjectId} (${bagId}) to ${uploadSpEndpoint}: ${msg}`)
     }
 
     if (uploadSuccesful) {
