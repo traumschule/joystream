@@ -117,8 +117,8 @@ export default class DistributionStats extends IncentivesCommandBase {
               data,
             }
             console.log("bucketData.data",bucketData.data)
-            console.log("version",bucketData.data.version)
-            console.log("versionversion",bucketData.data.version.version)
+            //console.log("version",bucketData.data.version)
+            //console.log("versionversion",bucketData.data.version.version)
             workerData.push(bucketData)
             let version = bucketData.data.version
             if (version == latestVersion) {
