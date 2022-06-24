@@ -3,6 +3,7 @@ import Command from '@oclif/command'
 import inquirer, { DistinctQuestion } from 'inquirer'
 import chalk from 'chalk'
 import inquirerDatepicker from 'inquirer-datepicker-prompt'
+import fs from 'fs'
 
 /**
  * Abstract base class for pretty much all commands
@@ -11,6 +12,7 @@ import inquirerDatepicker from 'inquirer-datepicker-prompt'
 export default abstract class DefaultCommandBase extends Command {
   protected indentGroupsOpened = 0
   protected jsonPrettyIdent = ''
+  protected jsonStore: { [key: string]: any } = { data: [] }
 
   log(message?: unknown, ...args: unknown[]): void {
     if (args.length) {
@@ -18,6 +20,15 @@ export default abstract class DefaultCommandBase extends Command {
     } else {
       console.error(message)
     }
+  }
+
+  json(key: string, value: unknown) {
+    if (!key) this.jsonStore[key] = value
+    else if (key === 'save') {
+      const jsonFile = `./${value}.json`
+      fs.writeFileSync(jsonFile, JSON.stringify(this.jsonStore))
+      this.log(`saved to ${jsonFile}.`)
+    } else this.jsonStore[key] = value
   }
 
   output(value: unknown): void {
