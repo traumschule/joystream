@@ -1,4 +1,4 @@
-# joystream-cli status #781
+# joystream-cli status (Joystream/community-repo#781)
 https://github.com/Joystream/community-repo/issues/781
 
 ## Tx Support
@@ -301,17 +301,17 @@ src/base/IncentivesCommandBase.ts:    const proposalExecutedEventsBetweenBlocks 
 ```
 src/commands/incentives/getForumStats.ts:    const postAddedEventsBetweenBlocks = await this.getQNApi().postAddedEventsBetweenBlocks(startBlock,endBlock)                        
 src/commands/incentives/getForumStats.ts:    const postDeletedEventsBetweenBlocks = await this.getQNApi().postDeletedEventsBetweenBlocks(startBlock,endBlock)
-src/commands/incentives/getForumStats.ts:    const postModeratedEventsBetweenBlocks = await this.getQNApi().postModeratedEventsBetweenBlocks(startBlock,endBlock)                                                                              
-src/commands/incentives/getForumStats.ts:    const postReactedEventsBetweenBlocks = await this.getQNApi().postReactedEventsBetweenBlocks(startBlock,endBlock)                                                                                  
-src/commands/incentives/getForumStats.ts:    const threadCreatedEventsBetweenBlocks = await this.getQNApi().threadCreatedEventsBetweenBlocks(startBlock,endBlock)                                                                              
+src/commands/incentives/getForumStats.ts:    const postModeratedEventsBetweenBlocks = await this.getQNApi().postModeratedEventsBetweenBlocks(startBlock,endBlock)
+src/commands/incentives/getForumStats.ts:    const postReactedEventsBetweenBlocks = await this.getQNApi().postReactedEventsBetweenBlocks(startBlock,endBlock)
+src/commands/incentives/getForumStats.ts:    const threadCreatedEventsBetweenBlocks = await this.getQNApi().threadCreatedEventsBetweenBlocks(startBlock,endBlock)
 src/commands/incentives/getForumStats.ts:    const threadDeletedEventsBetweenBlocks = await this.getQNApi().threadDeletedEventsBetweenBlocks(startBlock,endBlock)                
 src/commands/incentives/getForumStats.ts:    const threadModeratedEventsBetweenBlocks = await this.getQNApi().threadModeratedEventsBetweenBlocks(startBlock,endBlock)
-src/commands/incentives/getForumStats.ts:    const threadMetadataUpdatedEventsBetweenBlocks = await this.getQNApi().threadMetadataUpdatedEventsBetweenBlocks(startBlock,endBlock)                                                              
-src/commands/incentives/getForumStats.ts:    const threadMovedEventsBetweenBlocks = await this.getQNApi().threadMovedEventsBetweenBlocks(startBlock,endBlock)                                                                                  
-src/commands/incentives/getForumStats.ts:    const allForumCategories = await this.getQNApi().allForumCategories()                                                                                                                             
-src/commands/incentives/getForumStatsOld.ts:    const allForumPosts = await this.getQNApi().allForumPosts()                                                                                                                                    
-src/commands/incentives/getForumStatsOld.ts:    const allForumCategories = await this.getQNApi().allForumCategories()                                                                                                                          
-src/commands/incentives/getForumStatsOld.ts:    const allForumThreads = await this.getQNApi().allForumThreads()                                                                                                                                
+src/commands/incentives/getForumStats.ts:    const threadMetadataUpdatedEventsBetweenBlocks = await this.getQNApi().threadMetadataUpdatedEventsBetweenBlocks(startBlock,endBlock)
+src/commands/incentives/getForumStats.ts:    const threadMovedEventsBetweenBlocks = await this.getQNApi().threadMovedEventsBetweenBlocks(startBlock,endBlock)
+src/commands/incentives/getForumStats.ts:    const allForumCategories = await this.getQNApi().allForumCategories()
+src/commands/incentives/getForumStatsOld.ts:    const allForumPosts = await this.getQNApi().allForumPosts()
+src/commands/incentives/getForumStatsOld.ts:    const allForumCategories = await this.getQNApi().allForumCategories()
+src/commands/incentives/getForumStatsOld.ts:    const allForumThreads = await this.getQNApi().allForumThreads()                             
 ```
 
 #### Content
@@ -333,6 +333,7 @@ src/commands/incentives/storageMaintenanceOld.ts:    const storageBucketsData = 
 src/commands/incentives/storageMaintenanceOld.ts:    const newChannels = await this.getQNApi().channelsCreatedBetweenBlocks(startBlock,endBlock)
 src/commands/incentives/storageMaintenanceOld.ts:    const storageData = await this.getQNApi().storageBagStorageReplication()                                
 src/commands/incentives/storageMaintenanceOld.ts:    const storageNodeBuckets = await this.getQNApi().storageBucketsData()                                 
+```
 
 #### Distribution
 ```
