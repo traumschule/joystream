@@ -1,9 +1,7 @@
-
 import { flags } from '@oclif/command'
 import { AllChannelsFieldsFragment, AllVideosFieldsFragment } from 'src/graphql/generated/queries'
 import IncentivesCommandBase from '../../base/IncentivesCommandBase'
 //import chalk from 'chalk'
-
 
 export default class GetContentInfo extends IncentivesCommandBase {
   static description = 'Gets stats'
@@ -37,20 +35,21 @@ export default class GetContentInfo extends IncentivesCommandBase {
   }
 
   async run(): Promise<void> {
-    let { startBlock,endBlock,videosCensored,channelsCensored,startBlockTimestamp,endBlockTimestamp } = this.parse(GetContentInfo).flags
+    let { startBlock, endBlock, videosCensored, channelsCensored, startBlockTimestamp, endBlockTimestamp } = this.parse(
+      GetContentInfo
+    ).flags
     this.json('flags', GetContentInfo.flags)
     let startDateTime = await this.getTimestamps(startBlock)
     let endDateTime = await this.getTimestamps(endBlock)
-    if ( startBlockTimestamp && endBlockTimestamp) {
+    if (startBlockTimestamp && endBlockTimestamp) {
       startDateTime = new Date(startBlockTimestamp)
       endDateTime = new Date(endBlockTimestamp)
     }
 
-
     const oldVideosCensored: number[] = []
     const newVideosCensored: AllVideosFieldsFragment[] = []
     const allVideosCensored: AllVideosFieldsFragment[] = []
-    
+
     const oldChannelsCensored: number[] = []
     const newChannelsCensored: AllVideosFieldsFragment[] = []
     const allChannelsCensored: AllChannelsFieldsFragment[] = []
@@ -60,55 +59,57 @@ export default class GetContentInfo extends IncentivesCommandBase {
     const channelsUncensored: number[] = []
     const videosUncensored: number[] = []
 
-    const newVideos: [number,number][] = []
-    const newChannels: [number,number][] = []
+    const newVideos: [number, number][] = []
+    const newChannels: [number, number][] = []
 
     const videosWithMissingAssetsOrMetadata: number[] = []
     const newVideosWithMissingAssetsOrMetadata: AllVideosFieldsFragment[] = []
-    
+
     const channelsWithMissingAssetsOrMetadata: number[] = []
     const newChannelsWithMissingAssetsOrMetadata: AllChannelsFieldsFragment[] = []
 
     const isNft: number[] = []
     const nftBought: number[] = []
 
-    const nftBoughtEventsBetweenBlocks = await this.getQNApi().nftBoughtEventsBetweenBlocks(startBlock,endBlock)
-    const nftIssuedEventsBetweenBlocks = await this.getQNApi().nftIssuedEventsBetweenBlocks(startBlock,endBlock)
+    const nftBoughtEventsBetweenBlocks = await this.getQNApi().nftBoughtEventsBetweenBlocks(startBlock, endBlock)
+    const nftIssuedEventsBetweenBlocks = await this.getQNApi().nftIssuedEventsBetweenBlocks(startBlock, endBlock)
 
     this.log(`There were ${nftIssuedEventsBetweenBlocks.length} NFTs issued during the term:`)
     for (let a of nftIssuedEventsBetweenBlocks) {
       isNft.push(parseInt(a.videoId))
-      this.log(`  - ${parseInt(a.videoId)} by member ${a.ownerMemberId} at block ${a.inBlock} with a royalty of ${a.royalty}`)
+      this.log(
+        `  - ${parseInt(a.videoId)} by member ${a.ownerMemberId} at block ${a.inBlock} with a royalty of ${a.royalty}`
+      )
     }
 
     this.log(`There were ${nftBoughtEventsBetweenBlocks.length} NFTs bougth during the term:`)
     for (let a of nftBoughtEventsBetweenBlocks) {
       nftBought.push(parseInt(a.videoId))
-      this.log(`  - ${parseInt(a.videoId)} by member ${a.ownerMemberId} at block ${a.inBlock} for a price of ${a.price}`)
+      this.log(
+        `  - ${parseInt(a.videoId)} by member ${a.ownerMemberId} at block ${a.inBlock} for a price of ${a.price}`
+      )
     }
-    this.json('nft', { ids: isNft, bought: nftBought})
+    this.json('nft', { ids: isNft, bought: nftBought })
 
     if (videosCensored) {
-      videosCensored.split(",").forEach((a) => {
+      videosCensored.split(',').forEach((a) => {
         oldVideosCensored.push(parseInt(a))
       })
     }
 
     if (channelsCensored) {
-      channelsCensored.split(",").forEach((a) => {
+      channelsCensored.split(',').forEach((a) => {
         oldChannelsCensored.push(parseInt(a))
       })
     }
 
     const allVideos = await this.getQNApi().allVideos()
     const allChannels = await this.getQNApi().allChannels()
-    
-
 
     for (let video of allVideos) {
       const id = parseInt(video.id)
       if (video.createdInBlock > startBlock && video.createdInBlock < endBlock) {
-        newVideos.push([id,video.createdInBlock])
+        newVideos.push([id, video.createdInBlock])
       }
       if (video.isCensored) {
         allVideosCensored.push(video)
@@ -118,12 +119,15 @@ export default class GetContentInfo extends IncentivesCommandBase {
         if (!oldVideosCensored.includes(id)) {
           videosNotCensoredBefore.push(video)
         }
-        if (timeStampUpdated.getTime() > startDateTime.getTime() && timeStampUpdated.getTime() < endDateTime.getTime()) {
+        if (
+          timeStampUpdated.getTime() > startDateTime.getTime() &&
+          timeStampUpdated.getTime() < endDateTime.getTime()
+        ) {
           newVideosCensored.push(video)
-          if (censoredAfter/1000 < 86400) {
-            console.log("good censor", censoredAfter, id)
+          if (censoredAfter / 1000 < 86400) {
+            console.log('good censor', censoredAfter, id)
           } else {
-            console.log("bad censor", censoredAfter, id)
+            console.log('bad censor', censoredAfter, id)
           }
         }
       }
@@ -145,7 +149,7 @@ export default class GetContentInfo extends IncentivesCommandBase {
     for (let channel of allChannels) {
       const id = parseInt(channel.id)
       if (channel.createdInBlock > startBlock && channel.createdInBlock < endBlock) {
-        newChannels.push([id,channel.createdInBlock])
+        newChannels.push([id, channel.createdInBlock])
       }
       if (channel.isCensored) {
         const timeStampCreated = new Date(channel.createdAt)
@@ -159,12 +163,15 @@ export default class GetContentInfo extends IncentivesCommandBase {
         if (!oldChannelsCensored.includes(id)) {
           channelsNotCensoredBefore.push(channel)
         }
-        if (timeStampUpdated.getTime() > startDateTime.getTime() && timeStampUpdated.getTime() < endDateTime.getTime()) {
+        if (
+          timeStampUpdated.getTime() > startDateTime.getTime() &&
+          timeStampUpdated.getTime() < endDateTime.getTime()
+        ) {
           newChannelsCensored.push(channel)
-          if (censoredAfter/1000 < 86400) {
-            this.log("good censor", censoredAfter, id)
+          if (censoredAfter / 1000 < 86400) {
+            this.log('good censor', censoredAfter, id)
           } else {
-            this.log("bad censor", censoredAfter, id)
+            this.log('bad censor', censoredAfter, id)
           }
         }
       }
@@ -182,34 +189,74 @@ export default class GetContentInfo extends IncentivesCommandBase {
         }
       })
     }
-    this.json('channels', { all: allChannels, new: newChannels, censored: { all: channelsCensored, old: oldChannelsCensored, new: newChannelsCensored }, uncensored: { all: channelsUncensored, old: channelsNotCensoredBefore, new: newChannelsCensored }, missingAssetsOrMetadata: { all: channelsWithMissingAssetsOrMetadata, new: newChannelsWithMissingAssetsOrMetadata, old: channelsNotCensoredBefore } })
-    this.json('videos', { all: allVideos, new: newVideos, censored: { all: allVideosCensored, new: newVideosCensored, old: oldVideosCensored }, uncensored: { all: videosUncensored, old: videosNotCensoredBefore }, missingAssetsOrMetadata: { all: videosWithMissingAssetsOrMetadata, new:newVideosWithMissingAssetsOrMetadata }})
+    this.json('channels', {
+      all: allChannels,
+      new: newChannels,
+      censored: { all: channelsCensored, old: oldChannelsCensored, new: newChannelsCensored },
+      uncensored: { all: channelsUncensored, old: channelsNotCensoredBefore, new: newChannelsCensored },
+      missingAssetsOrMetadata: {
+        all: channelsWithMissingAssetsOrMetadata,
+        new: newChannelsWithMissingAssetsOrMetadata,
+        old: channelsNotCensoredBefore,
+      },
+    })
+    this.json('videos', {
+      all: allVideos,
+      new: newVideos,
+      censored: { all: allVideosCensored, new: newVideosCensored, old: oldVideosCensored },
+      uncensored: { all: videosUncensored, old: videosNotCensoredBefore },
+      missingAssetsOrMetadata: { all: videosWithMissingAssetsOrMetadata, new: newVideosWithMissingAssetsOrMetadata },
+    })
 
-    console.log("oldVideosCensored)",oldVideosCensored.length,oldVideosCensored)
-    
-    console.log("oldChannelsCensored)",oldChannelsCensored.length,oldChannelsCensored)
-    
-    console.log("channelsUncensored)",channelsUncensored.length,channelsUncensored)
-    console.log("videosUncensored)",videosUncensored.length,videosUncensored)
-    
-    console.log("newVideos)",newVideos.length,newVideos)
-    console.log("newChannels)",newChannels.length,newChannels)
-    
-    console.log("videosWithMissingAssetsOrMetadata)",videosWithMissingAssetsOrMetadata.length,videosWithMissingAssetsOrMetadata)
-    
-    console.log("channelsWithMissingAssetsOrMetadata)",channelsWithMissingAssetsOrMetadata.length,channelsWithMissingAssetsOrMetadata)
-    
-    console.log(`newVideosCensored`,newVideosCensored.length,JSON.stringify(newVideosCensored, null, 4))
-    console.log(`newVideosWithMissingAssetsOrMetadata`,newVideosWithMissingAssetsOrMetadata.length,JSON.stringify(newVideosWithMissingAssetsOrMetadata, null, 4))
-    
-    console.log(`newChannelsCensored`,newChannelsCensored.length,JSON.stringify(newChannelsCensored, null, 4))
-    console.log(`newChannelsWithMissingAssetsOrMetadata`,newChannelsWithMissingAssetsOrMetadata.length,JSON.stringify(newChannelsWithMissingAssetsOrMetadata, null, 4))
+    console.log('oldVideosCensored)', oldVideosCensored.length, oldVideosCensored)
 
-    console.log(`allVideosCensored`,allVideosCensored.length,JSON.stringify(allVideosCensored, null, 4))
-    console.log(`allChannelsCensored`,allChannelsCensored.length,JSON.stringify(allChannelsCensored, null, 4))
+    console.log('oldChannelsCensored)', oldChannelsCensored.length, oldChannelsCensored)
 
-    console.log(`videosNotCensoredBefore`,videosNotCensoredBefore.length,JSON.stringify(videosNotCensoredBefore, null, 4))
-    console.log(`channelsNotCensoredBefore`,channelsNotCensoredBefore.length,JSON.stringify(channelsNotCensoredBefore, null, 4))
+    console.log('channelsUncensored)', channelsUncensored.length, channelsUncensored)
+    console.log('videosUncensored)', videosUncensored.length, videosUncensored)
+
+    console.log('newVideos)', newVideos.length, newVideos)
+    console.log('newChannels)', newChannels.length, newChannels)
+
+    console.log(
+      'videosWithMissingAssetsOrMetadata)',
+      videosWithMissingAssetsOrMetadata.length,
+      videosWithMissingAssetsOrMetadata
+    )
+
+    console.log(
+      'channelsWithMissingAssetsOrMetadata)',
+      channelsWithMissingAssetsOrMetadata.length,
+      channelsWithMissingAssetsOrMetadata
+    )
+
+    console.log(`newVideosCensored`, newVideosCensored.length, JSON.stringify(newVideosCensored, null, 4))
+    console.log(
+      `newVideosWithMissingAssetsOrMetadata`,
+      newVideosWithMissingAssetsOrMetadata.length,
+      JSON.stringify(newVideosWithMissingAssetsOrMetadata, null, 4)
+    )
+
+    console.log(`newChannelsCensored`, newChannelsCensored.length, JSON.stringify(newChannelsCensored, null, 4))
+    console.log(
+      `newChannelsWithMissingAssetsOrMetadata`,
+      newChannelsWithMissingAssetsOrMetadata.length,
+      JSON.stringify(newChannelsWithMissingAssetsOrMetadata, null, 4)
+    )
+
+    console.log(`allVideosCensored`, allVideosCensored.length, JSON.stringify(allVideosCensored, null, 4))
+    console.log(`allChannelsCensored`, allChannelsCensored.length, JSON.stringify(allChannelsCensored, null, 4))
+
+    console.log(
+      `videosNotCensoredBefore`,
+      videosNotCensoredBefore.length,
+      JSON.stringify(videosNotCensoredBefore, null, 4)
+    )
+    console.log(
+      `channelsNotCensoredBefore`,
+      channelsNotCensoredBefore.length,
+      JSON.stringify(channelsNotCensoredBefore, null, 4)
+    )
     this.json('save', 'content')
   }
 }

@@ -1,16 +1,14 @@
-
 import { flags } from '@oclif/command'
 import { BudgetSpendingEventFieldsFragment } from 'src/graphql/generated/queries'
 import IncentivesCommandBase, { AllEras, BudgetStatus, EarnersByContext } from '../../base/IncentivesCommandBase'
 //import chalk from 'chalk'
-
 
 export default class CouncilSpending extends IncentivesCommandBase {
   static description = 'Gets stats'
   static args = [
     {
       name: 'startBlockInput',
-      required: true
+      required: true,
     },
     {
       name: 'endBlockInput',
@@ -20,28 +18,29 @@ export default class CouncilSpending extends IncentivesCommandBase {
 
   static flags = {
     getValidators: flags.string({
-      description: 'If included, it also calculates the validator earnings. If followed by "full", it will include all the data generated.',
+      description:
+        'If included, it also calculates the validator earnings. If followed by "full", it will include all the data generated.',
       required: false,
     }),
     ...IncentivesCommandBase.flags,
   }
 
   async run(): Promise<void> {
-    let { startBlockInput,endBlockInput } = this.parse(CouncilSpending).args
+    let { startBlockInput, endBlockInput } = this.parse(CouncilSpending).args
     const {
-      flags: { },
+      flags: {},
     } = this.parse(CouncilSpending)
 
     const startBlock = parseInt(startBlockInput)
     const endBlock = parseInt(endBlockInput)
     const startBlockHash = await this.getBlockHash(startBlock)
-    const startBlockHashPlusOne = await this.getBlockHash(startBlock+1)
+    const startBlockHashPlusOne = await this.getBlockHash(startBlock + 1)
     const endBlockHash = await this.getBlockHash(endBlock)
 
     const earners: EarnersByContext[] = []
 
-    const spend:BudgetStatus = {
-      startAmount:0,
+    const spend: BudgetStatus = {
+      startAmount: 0,
       endAmount: 0,
       refill: 0,
       totalSpentOnRewards: 0,
@@ -56,22 +55,22 @@ export default class CouncilSpending extends IncentivesCommandBase {
       workersRewards: [],
       allWorkers: [],
       workersHiredDuringTerm: [],
-      workersLeftDuringTerm: []
+      workersLeftDuringTerm: [],
     }
-  
+
     //Get the budget for all WGs and the Council at the start and at the end:
-    await this.getAllBudgetStatusInRange(spend,startBlockHashPlusOne,endBlockHash)
+    await this.getAllBudgetStatusInRange(spend, startBlockHashPlusOne, endBlockHash)
 
     //Get the all the budget increment for the Council in range:
-    const budgetRefillEventsBetweenBlocks = await this.getQNApi().budgetRefillEventsBetweenBlocks(startBlock,endBlock)
+    const budgetRefillEventsBetweenBlocks = await this.getQNApi().budgetRefillEventsBetweenBlocks(startBlock, endBlock)
     this.json('refills', budgetRefillEventsBetweenBlocks)
     for (let refills of budgetRefillEventsBetweenBlocks) {
-      const groupIndex = spend.groups.indexOf("council")
+      const groupIndex = spend.groups.indexOf('council')
       spend.groupRefills[groupIndex].push(parseInt(refills.balance))
       spend.refill += parseInt(refills.balance)
     }
 
-    const getBudgetEventsInRange = await this.getQNApi().budgetUpdatedEventsBetweenBlocks(startBlock,endBlock)
+    const getBudgetEventsInRange = await this.getQNApi().budgetUpdatedEventsBetweenBlocks(startBlock, endBlock)
     this.json('budgetEvents', getBudgetEventsInRange)
     for (let update of getBudgetEventsInRange) {
       const indexOfGroup = spend.apiModuleGroupNames.indexOf(update.groupId)
@@ -80,7 +79,7 @@ export default class CouncilSpending extends IncentivesCommandBase {
     //Get discretionary spending by group
     const discretionarySpending = await this.getQNApi().allBudgetSpendingEvents()
     this.json('budgetEvents', discretionarySpending)
-    const discretionarySpendingInPeriod:BudgetSpendingEventFieldsFragment[] = []
+    const discretionarySpendingInPeriod: BudgetSpendingEventFieldsFragment[] = []
     for (let nonRewardSpending of discretionarySpending) {
       if (nonRewardSpending.inBlock >= startBlock && nonRewardSpending.inBlock < endBlock) {
         discretionarySpendingInPeriod.push(nonRewardSpending)
@@ -90,18 +89,21 @@ export default class CouncilSpending extends IncentivesCommandBase {
     for (let nonRewardSpending of discretionarySpendingInPeriod) {
       const indexOfGroup = spend.apiModuleGroupNames.indexOf(nonRewardSpending.groupId)
       spend.groupDiscretionarySpending[indexOfGroup].push(parseInt(nonRewardSpending.amount))
-      this.log(`The ${spend.groups[indexOfGroup]} made a discretionary spending of ${nonRewardSpending.amount} at block #${nonRewardSpending.inBlock}. Rationale: "${nonRewardSpending.rationale ?? `not stated`}".`)
+      this.log(
+        `The ${spend.groups[indexOfGroup]} made a discretionary spending of ${nonRewardSpending.amount} at block #${
+          nonRewardSpending.inBlock
+        }. Rationale: "${nonRewardSpending.rationale ?? `not stated`}".`
+      )
     }
 
-  
     //Get all the workers in all WGs, then all the rewards they earned
-    await this.getWorkersInGroup(spend, startBlock,endBlock)
-    const rewardPaidEventsBetweenBlocks = await this.getQNApi().rewardPaidEventsBetweenBlocks(startBlock,endBlock)
+    await this.getWorkersInGroup(spend, startBlock, endBlock)
+    const rewardPaidEventsBetweenBlocks = await this.getQNApi().rewardPaidEventsBetweenBlocks(startBlock, endBlock)
     this.json('rewardPaidEvents', rewardPaidEventsBetweenBlocks)
     for (let rewardPaid of rewardPaidEventsBetweenBlocks) {
       const indexOfGroup = spend.apiModuleGroupNames.indexOf(rewardPaid.groupId)
       spend.rewardSpending[indexOfGroup].push(parseInt(rewardPaid.amount))
-      const workerString = rewardPaid.worker.id.split("-")
+      const workerString = rewardPaid.worker.id.split('-')
       const workerIdInGroup = parseInt(workerString[1])
       const indexOfWorkerInGroup = spend.allWorkers[indexOfGroup].indexOf(workerIdInGroup)
       spend.workersRewards[indexOfGroup][indexOfWorkerInGroup].reward += parseInt(rewardPaid.amount)
@@ -112,7 +114,7 @@ export default class CouncilSpending extends IncentivesCommandBase {
     const councilMembersAtBlock = await this.getQNApi().councilMembersAtBlock(endBlock)
     this.json('councilMembers', councilMembersAtBlock)
     for (let councilorRewards of councilMembersAtBlock) {
-      const indexOfGroup = spend.groups.indexOf("council")
+      const indexOfGroup = spend.groups.indexOf('council')
       spend.rewardSpending[indexOfGroup].push(parseInt(councilorRewards.accumulatedReward))
       spend.workersRewards[indexOfGroup].push({
         memberHandle: councilorRewards.member.handle,
@@ -121,61 +123,67 @@ export default class CouncilSpending extends IncentivesCommandBase {
         rewardAccount: councilorRewards.rewardAccountId,
         hiredAt: startBlock,
         leftAt: endBlock,
-        activeBlocks: endBlock-startBlock,
-        isLead: "na",
-        isActive: "na",
-        reward: parseInt(councilorRewards.accumulatedReward)+parseInt(councilorRewards.unpaidReward)
+        activeBlocks: endBlock - startBlock,
+        isLead: 'na',
+        isActive: 'na',
+        reward: parseInt(councilorRewards.accumulatedReward) + parseInt(councilorRewards.unpaidReward),
       })
     }
 
     // Get membership invitation spending:
-    const membersInvited = await this.getQNApi().memberInvitedEventsBetweenBlocks(startBlock,endBlock)
+    const membersInvited = await this.getQNApi().memberInvitedEventsBetweenBlocks(startBlock, endBlock)
     this.json('membersInvited', membersInvited)
     let inviteMembershipSpending = 0
-    for (let i=0; i<membersInvited.length; i++) {
+    for (let i = 0; i < membersInvited.length; i++) {
       const invitationBlock = membersInvited[i].inBlock
       const invitationBlockHash = await this.getBlockHash(invitationBlock)
-      const membershipPrice = (await this.getOriginalApi().query.members.membershipPrice.at(invitationBlockHash)).toNumber()
-      spend.groupDiscretionarySpending[spend.groups.indexOf("membership")].push(membershipPrice)
+      const membershipPrice = (
+        await this.getOriginalApi().query.members.membershipPrice.at(invitationBlockHash)
+      ).toNumber()
+      spend.groupDiscretionarySpending[spend.groups.indexOf('membership')].push(membershipPrice)
       inviteMembershipSpending += membershipPrice
     }
     this.json('inviteMembershipSpending', inviteMembershipSpending)
     //Tally up reward spending by group, and totals
-    for (let i=0; i<spend.groups.length; i++) {
+    for (let i = 0; i < spend.groups.length; i++) {
       spend.startAmount += spend.groupStart[i]
       spend.endAmount += spend.groupEnd[i]
       let groupRewardSpending = 0
       this.log(`Summary for ${spend.groups[i]}:`)
-      for (let n=0; n<spend.rewardSpending[i].length; n++) {
+      for (let n = 0; n < spend.rewardSpending[i].length; n++) {
         spend.totalSpentOnRewards += spend.rewardSpending[i][n]
         groupRewardSpending += spend.rewardSpending[i][n]
       }
       let groupTotDistSpending = 0
-      for (let n=0; n<spend.groupDiscretionarySpending[i].length; n++) {
+      for (let n = 0; n < spend.groupDiscretionarySpending[i].length; n++) {
         spend.totalSpentOnOther += spend.groupDiscretionarySpending[i][n]
         groupTotDistSpending += spend.groupDiscretionarySpending[i][n]
       }
       let totalRefilled = 0
-      for (let n=0; n<spend.groupRefills[i].length; n++) {
+      for (let n = 0; n < spend.groupRefills[i].length; n++) {
         totalRefilled += spend.groupRefills[i][n]
       }
       const groupTotalSpentInPeriod = spend.groupStart[i] + totalRefilled - spend.groupEnd[i]
       this.json('groupTotalSpent', groupTotalSpentInPeriod)
       this.log(`- budget had ${spend.groupStart[i]} at the start`)
-      this.log(`- budget had ${spend.groupEnd[i]} at the end`), 
-      this.log(`- with ${totalRefilled} refilled, across ${spend.groupRefills[i].length} refill events`)
+      this.log(`- budget had ${spend.groupEnd[i]} at the end`),
+        this.log(`- with ${totalRefilled} refilled, across ${spend.groupRefills[i].length} refill events`)
       this.log(`- for a total of ${groupTotalSpentInPeriod} spent.`)
       this.log(`Spending breakdown:`)
       this.log(`- a total of ${groupRewardSpending} on rewards`)
       this.log(`- a total of ${groupTotDistSpending} on discretionary`)
-      if (spend.groups[i] == "membership") {
+      if (spend.groups[i] == 'membership') {
         this.log(`  - where ${inviteMembershipSpending} are for inviting new members`)
       }
-      this.log(`- for a total ${groupRewardSpending+groupTotDistSpending}`)
-      this.log(`The difference means ${groupTotalSpentInPeriod-groupRewardSpending-groupTotDistSpending} is unaccounted for.\n`)
+      this.log(`- for a total ${groupRewardSpending + groupTotDistSpending}`)
+      this.log(
+        `The difference means ${
+          groupTotalSpentInPeriod - groupRewardSpending - groupTotDistSpending
+        } is unaccounted for.\n`
+      )
     }
 
-    const budgetDiff = spend.startAmount+spend.refill-spend.endAmount
+    const budgetDiff = spend.startAmount + spend.refill - spend.endAmount
     this.json('budgetDiff', budgetDiff)
     this.log(`
     The Council + WG budgets at the start of the period was: ${spend.startAmount} 
@@ -183,16 +191,16 @@ export default class CouncilSpending extends IncentivesCommandBase {
     The Council budget was replinished by a total of: ${spend.refill}
     This means a total of ${budgetDiff} was drained from the Council budget over the period.
 
-    A total of ${spend.totalSpentOnRewards} was spend on rewards, and ${spend.totalSpentOnOther} was spent on other, **known** things.
-    This means ${budgetDiff-spend.totalSpentOnRewards-spend.totalSpentOnOther} is unaccounted for.
+    A total of ${spend.totalSpentOnRewards} was spend on rewards, and ${
+      spend.totalSpentOnOther
+    } was spent on other, **known** things.
+    This means ${budgetDiff - spend.totalSpentOnRewards - spend.totalSpentOnOther} is unaccounted for.
     `)
     //Not clear if any events where the council budget was updated through sudo "counts"
 
-
     this.log(`A total of ${inviteMembershipSpending} was spent on inviting new members`)
-    
 
-    const proposalEarners = await this.getFundingRequestsExecuted(startBlock,endBlock)
+    const proposalEarners = await this.getFundingRequestsExecuted(startBlock, endBlock)
     this.json('proposalEarners', proposalEarners)
     this.log(`Proposals:`)
     this.log(`A total of ${proposalEarners.earnings} was spent on funding requests, where:
@@ -201,7 +209,7 @@ export default class CouncilSpending extends IncentivesCommandBase {
 
     earners.push(proposalEarners)
 
-    const bountyEarners = await this.getBountyEarners(startBlock,endBlock)
+    const bountyEarners = await this.getBountyEarners(startBlock, endBlock)
     this.json('bountyEarners', bountyEarners)
     this.log(`Bounties:`)
     this.log(`A total of ${bountyEarners.eligibleEarnings} was paid through bounties made by the HR group:
@@ -210,33 +218,34 @@ export default class CouncilSpending extends IncentivesCommandBase {
 
     earners.push(bountyEarners)
 
-
     let allGroupSpending = 0
     let totalMemberSlashes = 0
     let totalNonMemberSlashes = 0
     let totalSlashes = 0
     console.log(`|Group|Member Handle|Member Id|Worker Id|Reward Account | isActive | isLead | tJOY Earned |`)
-    for (let i=0; i<spend.workersRewards.length; i++) {
+    for (let i = 0; i < spend.workersRewards.length; i++) {
       let totalGroupSpending = 0
-      for (let n=0; n<spend.rewardSpending[i].length; n++) {
-        totalGroupSpending+=spend.rewardSpending[i][n]
+      for (let n = 0; n < spend.rewardSpending[i].length; n++) {
+        totalGroupSpending += spend.rewardSpending[i][n]
       }
       allGroupSpending += totalGroupSpending
-      
-      for (let n=0; n<spend.workersRewards[i].length; n++) {
+
+      for (let n = 0; n < spend.workersRewards[i].length; n++) {
         const worker = spend.workersRewards[i][n]
-        console.log(`|${spend.groups[i]}|${worker.memberHandle}|${worker.memberId}|${worker.workerId}|${worker.rewardAccount}|${worker.isActive}|${worker.isLead}|${worker.reward} |`)
+        console.log(
+          `|${spend.groups[i]}|${worker.memberHandle}|${worker.memberId}|${worker.workerId}|${worker.rewardAccount}|${worker.isActive}|${worker.isLead}|${worker.reward} |`
+        )
       }
       console.log(`|SUM ${spend.groups[i]}|${spend.workersRewards[i].length}|NA|NA|NA|NA|NA|${totalGroupSpending} |`)
     }
     console.log(``)
-    console.log("allGroupSpending",allGroupSpending)
+    console.log('allGroupSpending', allGroupSpending)
     this.json('allGroupSpending', allGroupSpending)
 
-    const eras = await this.getEraRange(startBlockHash,endBlockHash)
+    const eras = await this.getEraRange(startBlockHash, endBlockHash)
     this.json('eras', eras)
 
-    const totalSum:AllEras = {
+    const totalSum: AllEras = {
       firstStart: eras[0],
       lastEra: eras[1],
       actualRewardSum: 0,
@@ -252,13 +261,13 @@ export default class CouncilSpending extends IncentivesCommandBase {
     const assoicatedControllers: string[] = []
     const assoicatedRewards: number[] = []
     const assoicatedSlashes: number[] = []
-    for (let era = eras[0]; era<eras[1]; era++) {
-      const rewards = await this.getEraResults(era,endBlockHash)
+    for (let era = eras[0]; era < eras[1]; era++) {
+      const rewards = await this.getEraResults(era, endBlockHash)
       totalSum.actualRewardSum += rewards.eraTotalReward
       totalSum.calculatedRewardSum += rewards.summedRewards
       totalSum.eraResults.push(rewards)
       totalSum.totalNominatorRewards += rewards.nominatorRewards
-      for (let i = 0; i<rewards.validatorStashes.length; i++) {
+      for (let i = 0; i < rewards.validatorStashes.length; i++) {
         const indexOf = uniqueStashAccounts.indexOf(rewards.validatorStashes[i])
         totalSlashes += rewards.slashesIncurred[i]
         if (indexOf == -1) {
@@ -273,7 +282,7 @@ export default class CouncilSpending extends IncentivesCommandBase {
       }
     }
     const validatorEarners: EarnersByContext = {
-      context: "validators",
+      context: 'validators',
       earnings: 0,
       eligibleEarnings: 0,
       uneligibleEarnings: 0,
@@ -282,42 +291,46 @@ export default class CouncilSpending extends IncentivesCommandBase {
     }
     const allMembers = await this.getOriginalApi().query.members.membershipById.entriesAt(endBlockHash)
     this.json('members', allMembers)
-    const memberRoot:string[] = []
-    const memberCtrl:string[] = []
+    const memberRoot: string[] = []
+    const memberCtrl: string[] = []
     const memberId: number[] = []
-    allMembers.forEach(([a,b]) => {
+    allMembers.forEach(([a, b]) => {
       memberId.push(a.args[0].toNumber())
       memberRoot.push(b.root_account.toString())
       memberCtrl.push(b.controller_account.toString())
     })
-    for (let i=0; i<uniqueStashAccounts.length; i++) {
+    for (let i = 0; i < uniqueStashAccounts.length; i++) {
       const valStash = uniqueStashAccounts[i]
       const valCtrl = assoicatedControllers[i]
-      const indeces = [memberRoot.indexOf(valStash),memberRoot.indexOf(valCtrl),memberRoot.indexOf(valStash),memberRoot.indexOf(valCtrl)]
-      indeces.sort((a,b) => b-a)
-    
+      const indeces = [
+        memberRoot.indexOf(valStash),
+        memberRoot.indexOf(valCtrl),
+        memberRoot.indexOf(valStash),
+        memberRoot.indexOf(valCtrl),
+      ]
+      indeces.sort((a, b) => b - a)
+
       if (indeces[0] == -1) {
         totalNonMemberSlashes += assoicatedSlashes[i]
         validatorEarners.uneligibleEarner.push({
           account: valStash,
-          earnings: assoicatedRewards[i]-assoicatedSlashes[i],
-          notes: `No member account linked.`
+          earnings: assoicatedRewards[i] - assoicatedSlashes[i],
+          notes: `No member account linked.`,
         })
         totalSum.nonMemberRewards.push({
           stash: uniqueStashAccounts[i],
           controller: assoicatedControllers[i],
-          rewardsEarned: assoicatedRewards[i]-assoicatedSlashes[i]
+          rewardsEarned: assoicatedRewards[i] - assoicatedSlashes[i],
         })
         totalSum.totalNonMemberRewards += assoicatedRewards[i]
-      }
-      else {
+      } else {
         totalMemberSlashes += assoicatedSlashes[i]
         validatorEarners.eligibleEarner.push({
           memberId: memberId[indeces[0]],
-          memberHandle: "na",
+          memberHandle: 'na',
           account: valStash,
-          earnings: assoicatedRewards[i]-assoicatedSlashes[i],
-          notes: `Controller: ${valCtrl}`
+          earnings: assoicatedRewards[i] - assoicatedSlashes[i],
+          notes: `Controller: ${valCtrl}`,
         })
         totalSum.memberRewards.push({
           stash: uniqueStashAccounts[i],
@@ -334,30 +347,42 @@ export default class CouncilSpending extends IncentivesCommandBase {
     validatorEarners.uneligibleEarnings = totalSum.totalNonMemberRewards
     this.json('validatorEarners', validatorEarners)
 
-    this.log(`A total of ${validatorEarners.earnings} was paid to validators (that in total was slashed ${totalSlashes}) and nominators, where:
-    - ${validatorEarners.eligibleEarner.length} validators earned ${validatorEarners.eligibleEarnings} tJOY eligible for JOY
+    this.log(`A total of ${
+      validatorEarners.earnings
+    } was paid to validators (that in total was slashed ${totalSlashes}) and nominators, where:
+    - ${validatorEarners.eligibleEarner.length} validators earned ${
+      validatorEarners.eligibleEarnings
+    } tJOY eligible for JOY
       - after the slashes, amounting to ${totalMemberSlashes} has been subtracted for each individual
-    - ${validatorEarners.uneligibleEarner.length} validators earned ${validatorEarners.uneligibleEarnings} tJOY NOT eligible for JOY
+    - ${validatorEarners.uneligibleEarner.length} validators earned ${
+      validatorEarners.uneligibleEarnings
+    } tJOY NOT eligible for JOY
       - after the slashes, amounting to ${totalNonMemberSlashes} has been subtracted for each individual
-    - the rest ${validatorEarners.earnings-(validatorEarners.eligibleEarnings+validatorEarners.uneligibleEarnings)} was presumably allocated to nominators`)
+    - the rest ${
+      validatorEarners.earnings - (validatorEarners.eligibleEarnings + validatorEarners.uneligibleEarnings)
+    } was presumably allocated to nominators`)
     earners.push(validatorEarners)
     this.json('earners', earners)
 
     let allNonWgEarnings = 0
     let allNonWgEligebleEarnings = 0
-    for (let i=0; i<earners.length; i++) {
+    for (let i = 0; i < earners.length; i++) {
       allNonWgEarnings += earners[i].earnings
       allNonWgEligebleEarnings += earners[i].eligibleEarnings
       console.log(`|Context|Member Handle|Member Id|Notes|Reward Account|tJOY Earned |`)
-      for (let n=0; n<earners[i].eligibleEarner.length; n++) {
+      for (let n = 0; n < earners[i].eligibleEarner.length; n++) {
         const earner = earners[i].eligibleEarner[n]
-        console.log(`|${earners[i].context}|${earner.memberHandle}|${earner.memberId}|${earner.notes}|${earner.account}|${earner.earnings} |`)
+        console.log(
+          `|${earners[i].context}|${earner.memberHandle}|${earner.memberId}|${earner.notes}|${earner.account}|${earner.earnings} |`
+        )
       }
-      console.log(`|SUM ${earners[i].context}|${earners[i].eligibleEarner.length}|NA|NA|${validatorEarners.eligibleEarnings} |`)
+      console.log(
+        `|SUM ${earners[i].context}|${earners[i].eligibleEarner.length}|NA|NA|${validatorEarners.eligibleEarnings} |`
+      )
     }
     console.log(``)
-    console.log("allNonWgEarnings",allNonWgEarnings)
-    console.log("allNonWgEligebleEarnings",allNonWgEligebleEarnings)
+    console.log('allNonWgEarnings', allNonWgEarnings)
+    console.log('allNonWgEligebleEarnings', allNonWgEligebleEarnings)
     this.json('allNonWgEarnings', allNonWgEarnings)
     this.json('allNonWgEligebleEarnings', allNonWgEligebleEarnings)
     this.json('save', 'spending')

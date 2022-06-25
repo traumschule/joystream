@@ -2,13 +2,12 @@ import { flags } from '@oclif/command'
 import IncentivesCommandBase, { StorageBucketData } from '../../base/IncentivesCommandBase'
 //import chalk from 'chalk'
 
-
 export default class StorageMaintenance extends IncentivesCommandBase {
   static description = 'Gets storage replication statistics'
   static args = [
     {
       name: 'startBlockInput',
-      required: true
+      required: true,
     },
     {
       name: 'endBlockInput',
@@ -19,7 +18,8 @@ export default class StorageMaintenance extends IncentivesCommandBase {
     spotchecksBlocks: flags.string({
       char: 's',
       required: true,
-      description: 'The blocks to measeure at, as comma separated blockheights. Only the last one will count for version',
+      description:
+        'The blocks to measeure at, as comma separated blockheights. Only the last one will count for version',
     }),
     minReplication: flags.integer({
       char: 'm',
@@ -44,46 +44,57 @@ export default class StorageMaintenance extends IncentivesCommandBase {
     ...IncentivesCommandBase.flags,
   }
   async run(): Promise<void> {
-    let { startBlockInput,endBlockInput } = this.parse(StorageMaintenance).args
+    let { startBlockInput, endBlockInput } = this.parse(StorageMaintenance).args
     const startBlock = parseInt(startBlockInput)
     const endBlock = parseInt(endBlockInput)
-    const { spotchecksBlocks, minReplication, ignoreBags, excessReplication,latestVersion } = this.parse(StorageMaintenance).flags
-    const blocks:number[] = []
-    spotchecksBlocks.split(",").forEach((a) => {
+    const { spotchecksBlocks, minReplication, ignoreBags, excessReplication, latestVersion } = this.parse(
+      StorageMaintenance
+    ).flags
+    const blocks: number[] = []
+    spotchecksBlocks.split(',').forEach((a) => {
       blocks.push(parseInt(a))
     })
     let startDateTime = await this.getTimestamps(startBlock)
     let endDateTime = await this.getTimestamps(endBlock)
-    console.log("startDateTime,endDateTime",startDateTime,endDateTime)
-    
-    const bagsToIgnore:string[] = []
+    console.log('startDateTime,endDateTime', startDateTime, endDateTime)
+
+    const bagsToIgnore: string[] = []
     if (ignoreBags) {
-      ignoreBags.split(",").forEach((a) => {
+      ignoreBags.split(',').forEach((a) => {
         bagsToIgnore.push(`dynamic:channel:${a}`)
       })
     }
-    const hashes:string[] = []
+    const hashes: string[] = []
     let dynamic_configuration_score_i = 0
     const startHash = await this.getBlockHash(startBlock)
     const endHash = await this.getBlockHash(endBlock)
     const startObjects = (await this.getOriginalApi().query.storage.nextDataObjectId.at(startHash)).toNumber()
     const endObjects = (await this.getOriginalApi().query.storage.nextDataObjectId.at(endHash)).toNumber()
-    this.json('start', {block:startBlock, hash: startHash, objects: startObjects})
-    this.json('end', {block:endBlock, hash: endHash, objects: endObjects})
-    this.log(`There was ${startObjects} at the start of the term, and ${endObjects} at the end -> ${endObjects-startObjects} objects uploaded during the period.`)
+    this.json('start', { block: startBlock, hash: startHash, objects: startObjects })
+    this.json('end', { block: endBlock, hash: endHash, objects: endObjects })
+    this.log(
+      `There was ${startObjects} at the start of the term, and ${endObjects} at the end -> ${
+        endObjects - startObjects
+      } objects uploaded during the period.`
+    )
     for (let block of blocks) {
       const hash = await this.getBlockHash(block)
       hashes.push(hash)
-      const policyAt = await this.getDynamicBagCreationPoliciesAt(hash,"Channel")
-      dynamic_configuration_score_i += Math.min(Math.max(policyAt.numberOfStorageBuckets.toNumber()-(minReplication-1),0),1)
-      this.log(`At block #${block} the dynamic policy was ${policyAt.numberOfStorageBuckets.toNumber()} -> dynamic_configuration_score_i = ${dynamic_configuration_score_i}`)
+      const policyAt = await this.getDynamicBagCreationPoliciesAt(hash, 'Channel')
+      dynamic_configuration_score_i += Math.min(
+        Math.max(policyAt.numberOfStorageBuckets.toNumber() - (minReplication - 1), 0),
+        1
+      )
+      this.log(
+        `At block #${block} the dynamic policy was ${policyAt.numberOfStorageBuckets.toNumber()} -> dynamic_configuration_score_i = ${dynamic_configuration_score_i}`
+      )
     }
-    const dynamic_configuration_score = dynamic_configuration_score_i/blocks.length
+    const dynamic_configuration_score = dynamic_configuration_score_i / blocks.length
     this.log(`-> dynamic_configuration_score = ${dynamic_configuration_score}`)
     this.json('dynamicConfigurationScore', dynamic_configuration_score)
 
     const workerData: StorageBucketData[][] = []
-    for (let i=0; i<blocks.length; i++) {
+    for (let i = 0; i < blocks.length; i++) {
       const workerDataAt = await this.getStorageWorkersAt(hashes[i])
       workerData.push(workerDataAt)
     }
@@ -91,34 +102,34 @@ export default class StorageMaintenance extends IncentivesCommandBase {
 
     const storageBucketsData = await this.getQNApi().storageBucketsData()
     this.json('storageBuckets', storageBucketsData)
-    const latest:[number,string,string][] = []
-    const notLatest:[number,string,string][] = []
-    const notReached:[number,string,string][] = []
+    const latest: [number, string, string][] = []
+    const notLatest: [number, string, string][] = []
+    const notReached: [number, string, string][] = []
     for (let bucket of storageBucketsData) {
       let endpointUrl = bucket.operatorMetadata?.nodeEndpoint ?? undefined
       if (endpointUrl) {
       } else {
-        endpointUrl = "not set"
+        endpointUrl = 'not set'
       }
       if (bucket.operatorMetadata) {
-        const versionJson = await this.getColossusData(endpointUrl,"version")
+        const versionJson = await this.getColossusData(endpointUrl, 'version')
         const version: string = versionJson.version
-        for (let operator of workerData[workerData.length-1]) {
+        for (let operator of workerData[workerData.length - 1]) {
           if (operator.bucketId == parseInt(bucket.id)) {
             operator.endpointUrl = endpointUrl
             operator.nodeVersion = version
             if (version == latestVersion) {
-              latest.push([operator.bucketId,endpointUrl,version])
-            } else if (version == "not reachable") {
-              notReached.push([operator.bucketId,endpointUrl,version])
+              latest.push([operator.bucketId, endpointUrl, version])
+            } else if (version == 'not reachable') {
+              notReached.push([operator.bucketId, endpointUrl, version])
             } else {
-              notLatest.push([operator.bucketId,endpointUrl,version])
+              notLatest.push([operator.bucketId, endpointUrl, version])
             }
           }
         }
       }
     }
-    this.log(`For the workers at block ${blocks[blocks.length-1]}, there were:`)
+    this.log(`For the workers at block ${blocks[blocks.length - 1]}, there were:`)
     this.log(`  - ${latest.length} nodes running version ${latestVersion}`)
     this.log(`  - ${notReached.length} nodes were either not up, or not displaying the version`)
     this.log(`  - ${notLatest.length} nodes running OTHER versions`)
@@ -126,10 +137,10 @@ export default class StorageMaintenance extends IncentivesCommandBase {
     this.json('notReached', notReached)
     this.json('notLatest', notLatest)
 
-    const newBagIds:string[] = []
+    const newBagIds: string[] = []
     let firstChannelId = 2000
     let lastChannelId = 2000
-    const newChannels = await this.getQNApi().channelsCreatedBetweenBlocks(startBlock,endBlock)
+    const newChannels = await this.getQNApi().channelsCreatedBetweenBlocks(startBlock, endBlock)
     this.json('newChannels', newChannels)
     for (let channel of newChannels) {
       newBagIds.push(`dynamic:channel:${channel.id}`)
@@ -141,22 +152,30 @@ export default class StorageMaintenance extends IncentivesCommandBase {
 
     let excessReplicationBags = 0
     let existing_bag_configuration_score = 1
-    const bagsUnderTreshold:[string,number][] = []
-    for (let i=firstChannelId; i<lastChannelId; i++) {
-      const channelId = this.createType("ChannelId",i)
+    const bagsUnderTreshold: [string, number][] = []
+    for (let i = firstChannelId; i < lastChannelId; i++) {
+      const channelId = this.createType('ChannelId', i)
       const bagId = `dynamic:channel:${i.toString()}`
-      const bag = await this.getOriginalApi().query.storage.bags.at(endHash,{ Dynamic: { Channel: channelId }})
+      const bag = await this.getOriginalApi().query.storage.bags.at(endHash, { Dynamic: { Channel: channelId } })
       const storedBy = bag.stored_by.strings.length
       if (storedBy <= minReplication && !bagsToIgnore.includes(bagId)) {
         existing_bag_configuration_score = 0
-        bagsUnderTreshold.push([bagId,storedBy])
+        bagsUnderTreshold.push([bagId, storedBy])
       }
     }
     this.json('bagsUnderTreshold', bagsUnderTreshold)
-    console.log("New Bags",newBagIds.length)
-    this.log(`Out of ${lastChannelId-firstChannelId} bags, there are ${excessReplicationBags} in more than ${excessReplication} buckets`)
-    this.log(`Out of ${lastChannelId-firstChannelId} bags, ${bagsUnderTreshold.length} are in fewer than ${minReplication} buckets`)
+    console.log('New Bags', newBagIds.length)
+    this.log(
+      `Out of ${
+        lastChannelId - firstChannelId
+      } bags, there are ${excessReplicationBags} in more than ${excessReplication} buckets`
+    )
+    this.log(
+      `Out of ${lastChannelId - firstChannelId} bags, ${
+        bagsUnderTreshold.length
+      } are in fewer than ${minReplication} buckets`
+    )
     this.log(`existing_bag_configuration_score = ${existing_bag_configuration_score}`)
-    this.json('save','storage')
+    this.json('save', 'storage')
   }
 }
