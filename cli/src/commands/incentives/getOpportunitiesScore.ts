@@ -38,16 +38,19 @@ export default class GetOpportunitiesScoreCommand extends IncentivesCommandBase 
     ...IncentivesCommandBase.flags,
   }
   async run(): Promise<void> {
+    this.json('flags', GetOpportunitiesScoreCommand.flags)
     let { termStart,termLength,termEnd,groupsCounted, groupTargets } = this.parse(GetOpportunitiesScoreCommand).flags
     
     const targets:number[] = []
     groupTargets.split(",").forEach((a) => {
       targets.push(100-parseInt(a))
     })
+    this.json('targets',groupTargets)
     const applicableGroups:string[] = []
     groupsCounted.split(",").forEach((a) => {
       applicableGroups.push(a)
     })
+    this.json('groups',applicableGroups)
     const periods:number[] = [termStart]
     for (let i=termStart; i<termEnd; i+=termLength) {
       periods.push(i+termLength)
@@ -101,6 +104,7 @@ with:`)
         console.log(JSON.stringify(workersInGroup,null,4))
       }
     }
+    this.json('leads','leads')
     if (leads.length > 1) {
       leads.sort((a,b) => b[2]-a[2])
       const LEAD_OPPORTUNITIES_SCORE = 1/leads[0][5]
@@ -108,5 +112,6 @@ with:`)
       console.log(`Given the set of leads active during the period, with: group, workerId, hiredInBlock, leftAtBlock (or last block of period), hiredInTerm, numberOfTermsInGroup`)
       console.log(JSON.stringify(leads,null,4))
     }
+    this.json('save','opportunities')
   }
 }

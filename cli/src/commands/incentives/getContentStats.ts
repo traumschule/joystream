@@ -38,7 +38,7 @@ export default class GetContentInfo extends IncentivesCommandBase {
 
   async run(): Promise<void> {
     let { startBlock,endBlock,videosCensored,channelsCensored,startBlockTimestamp,endBlockTimestamp } = this.parse(GetContentInfo).flags
-    
+    this.json('flags', GetContentInfo.flags)
     let startDateTime = await this.getTimestamps(startBlock)
     let endDateTime = await this.getTimestamps(endBlock)
     if ( startBlockTimestamp && endBlockTimestamp) {
@@ -86,9 +86,7 @@ export default class GetContentInfo extends IncentivesCommandBase {
       nftBought.push(parseInt(a.videoId))
       this.log(`  - ${parseInt(a.videoId)} by member ${a.ownerMemberId} at block ${a.inBlock} for a price of ${a.price}`)
     }
-
-
-    
+    this.json('nft', { ids: isNft, bought: nftBought})
 
     if (videosCensored) {
       videosCensored.split(",").forEach((a) => {
@@ -164,9 +162,9 @@ export default class GetContentInfo extends IncentivesCommandBase {
         if (timeStampUpdated.getTime() > startDateTime.getTime() && timeStampUpdated.getTime() < endDateTime.getTime()) {
           newChannelsCensored.push(channel)
           if (censoredAfter/1000 < 86400) {
-            console.log("good censor", censoredAfter, id)
+            this.log("good censor", censoredAfter, id)
           } else {
-            console.log("bad censor", censoredAfter, id)
+            this.log("bad censor", censoredAfter, id)
           }
         }
       }
@@ -184,6 +182,8 @@ export default class GetContentInfo extends IncentivesCommandBase {
         }
       })
     }
+    this.json('channels', { all: allChannels, new: newChannels, censored: { all: channelsCensored, old: oldChannelsCensored, new: newChannelsCensored }, uncensored: { all: channelsUncensored, old: channelsNotCensoredBefore, new: newChannelsCensored }, missingAssetsOrMetadata: { all: channelsWithMissingAssetsOrMetadata, new: newChannelsWithMissingAssetsOrMetadata, old: channelsNotCensoredBefore } })
+    this.json('videos', { all: allVideos, new: newVideos, censored: { all: allVideosCensored, new: newVideosCensored, old: oldVideosCensored }, uncensored: { all: videosUncensored, old: videosNotCensoredBefore }, missingAssetsOrMetadata: { all: videosWithMissingAssetsOrMetadata, new:newVideosWithMissingAssetsOrMetadata }})
 
     console.log("oldVideosCensored)",oldVideosCensored.length,oldVideosCensored)
     
@@ -210,5 +210,6 @@ export default class GetContentInfo extends IncentivesCommandBase {
 
     console.log(`videosNotCensoredBefore`,videosNotCensoredBefore.length,JSON.stringify(videosNotCensoredBefore, null, 4))
     console.log(`channelsNotCensoredBefore`,channelsNotCensoredBefore.length,JSON.stringify(channelsNotCensoredBefore, null, 4))
+    this.json('save', 'content')
   }
 }

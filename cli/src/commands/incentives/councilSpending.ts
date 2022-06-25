@@ -360,6 +360,6 @@ export default class CouncilSpending extends IncentivesCommandBase {
     console.log("allNonWgEligebleEarnings",allNonWgEligebleEarnings)
     this.json('allNonWgEarnings', allNonWgEarnings)
     this.json('allNonWgEligebleEarnings', allNonWgEligebleEarnings)
-    this.json('save', 'councilSpending')
+    this.json('save', 'spending')
   }
 }

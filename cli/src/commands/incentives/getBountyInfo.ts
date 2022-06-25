@@ -21,20 +21,22 @@ export default class GetBountyInfo extends IncentivesCommandBase {
   }
 
   async run(): Promise<void> {
+    this.json('args', GetBountyInfo.args)
     let { startBlockInput,endBlockInput } = this.parse(GetBountyInfo).args
 
     const startBlock = parseInt(startBlockInput)
     const endBlock = parseInt(endBlockInput)
-    //const startBlockHash = await this.getBlockHash(startBlock)
-    //const endBlockHash = await this.getBlockHash(endBlock)
     const bountiesCreatedByHR = await this.getBountiesCreated(startBlock,endBlock)
-
+    this.json('hrBounties', bountiesCreatedByHR)
     this.log(JSON.stringify(bountiesCreatedByHR, null, 4))
 
     const allBounties = await this.getAllBountyData(startBlock,endBlock)
+    this.json('allBounties', allBounties)
     console.log(allBounties)
     
     const bountyEarners = await this.getBountyEarners(startBlock,endBlock)
+    this.json('bountyEarners', bountyEarners)
     console.log(bountyEarners)
+    this.json('save','bounties')
   }
 }

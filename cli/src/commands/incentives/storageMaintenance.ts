@@ -68,6 +68,8 @@ export default class StorageMaintenance extends IncentivesCommandBase {
     const endHash = await this.getBlockHash(endBlock)
     const startObjects = (await this.getOriginalApi().query.storage.nextDataObjectId.at(startHash)).toNumber()
     const endObjects = (await this.getOriginalApi().query.storage.nextDataObjectId.at(endHash)).toNumber()
+    this.json('start', {block:startBlock, hash: startHash, objects: startObjects})
+    this.json('end', {block:endBlock, hash: endHash, objects: endObjects})
     this.log(`There was ${startObjects} at the start of the term, and ${endObjects} at the end -> ${endObjects-startObjects} objects uploaded during the period.`)
     for (let block of blocks) {
       const hash = await this.getBlockHash(block)
@@ -78,15 +80,17 @@ export default class StorageMaintenance extends IncentivesCommandBase {
     }
     const dynamic_configuration_score = dynamic_configuration_score_i/blocks.length
     this.log(`-> dynamic_configuration_score = ${dynamic_configuration_score}`)
+    this.json('dynamicConfigurationScore', dynamic_configuration_score)
 
     const workerData: StorageBucketData[][] = []
     for (let i=0; i<blocks.length; i++) {
       const workerDataAt = await this.getStorageWorkersAt(hashes[i])
       workerData.push(workerDataAt)
     }
-    
+    this.json('workerData', workerData)
 
     const storageBucketsData = await this.getQNApi().storageBucketsData()
+    this.json('storageBuckets', storageBucketsData)
     const latest:[number,string,string][] = []
     const notLatest:[number,string,string][] = []
     const notReached:[number,string,string][] = []
@@ -118,17 +122,22 @@ export default class StorageMaintenance extends IncentivesCommandBase {
     this.log(`  - ${latest.length} nodes running version ${latestVersion}`)
     this.log(`  - ${notReached.length} nodes were either not up, or not displaying the version`)
     this.log(`  - ${notLatest.length} nodes running OTHER versions`)
+    this.json('latest', latest)
+    this.json('notReached', notReached)
+    this.json('notLatest', notLatest)
 
     const newBagIds:string[] = []
     let firstChannelId = 2000
     let lastChannelId = 2000
     const newChannels = await this.getQNApi().channelsCreatedBetweenBlocks(startBlock,endBlock)
+    this.json('newChannels', newChannels)
     for (let channel of newChannels) {
       newBagIds.push(`dynamic:channel:${channel.id}`)
       if (parseInt(channel.id) > lastChannelId) {
         lastChannelId = parseInt(channel.id)
       }
     }
+    this.json('newBagIds', newBagIds)
 
     let excessReplicationBags = 0
     let existing_bag_configuration_score = 1
@@ -143,9 +152,11 @@ export default class StorageMaintenance extends IncentivesCommandBase {
         bagsUnderTreshold.push([bagId,storedBy])
       }
     }
+    this.json('bagsUnderTreshold', bagsUnderTreshold)
     console.log("New Bags",newBagIds.length)
     this.log(`Out of ${lastChannelId-firstChannelId} bags, there are ${excessReplicationBags} in more than ${excessReplication} buckets`)
     this.log(`Out of ${lastChannelId-firstChannelId} bags, ${bagsUnderTreshold.length} are in fewer than ${minReplication} buckets`)
     this.log(`existing_bag_configuration_score = ${existing_bag_configuration_score}`)
+    this.json('save','storage')
   }
 }

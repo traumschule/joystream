@@ -12,9 +12,10 @@ import fs from 'fs'
 export default abstract class DefaultCommandBase extends Command {
   protected indentGroupsOpened = 0
   protected jsonPrettyIdent = ''
-  protected jsonStore: { [key: string]: any } = { data: [] }
+  protected jsonStore: { [key: string]: any } = { log: [] }
 
   log(message?: unknown, ...args: unknown[]): void {
+    this.json(null, { message, args })
     if (args.length) {
       console.error(message, args)
     } else {
@@ -22,8 +23,8 @@ export default abstract class DefaultCommandBase extends Command {
     }
   }
 
-  json(key: string, value: unknown) {
-    if (!key) this.jsonStore[key] = value
+  json(key: string | null, value: unknown) {
+    if (!key) this.jsonStore.log.push(value)
     else if (key === 'save') {
       const jsonFile = `./${value}.json`
       fs.writeFileSync(jsonFile, JSON.stringify(this.jsonStore))

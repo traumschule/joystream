@@ -24,6 +24,8 @@ export default class ValidatorStats extends IncentivesCommandBase {
     console.log("endBlock,endBlockHash",endBlock,endBlockHash.toString())
     
     const eras = await this.getEraRange(startBlockHash,endBlockHash)
+    this.json('eras', eras)
+    this.json('term', {startBlock, startBlockHash, endBlock, endBlockHash})
     console.log("eras",eras[0],eras[1],eras)
 
     const totalSum:AllEras = {
@@ -62,6 +64,7 @@ export default class ValidatorStats extends IncentivesCommandBase {
       }
     }
     const allMembers = await this.getOriginalApi().query.members.membershipById.entries()
+    this.json('members', allMembers)
     const memberRoot:string[] = []
     const memberCtrl:string[] = []
     const memberId: number[] = []
@@ -93,7 +96,9 @@ export default class ValidatorStats extends IncentivesCommandBase {
         totalSum.totalMemberRewards += assoicatedRewards[i]
       }
     }
+    this.json('totalSum', totalSum)
     console.log(`totalSum`,JSON.stringify(totalSum, null, 4))
+    this.json('save', 'validators')
   }
 }
 

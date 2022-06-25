@@ -74,8 +74,12 @@ export default class GetOpeningsStatsCommand extends IncentivesCommandBase {
         )
       }
     }
+    this.json('availableGroups', AvailableGroups)
+    this.json('apiModuleGroupNames', apiModuleGroupNames)
+    this.json('groupsOfInterest', groupsOfInterest)
     
     const allOpenings = await this.getQNApi().allWorkingGroupOpenings()
+    this.json('allOpenings', allOpenings)
     for (let opening of allOpenings) {
       const indexOfGroup = apiModuleGroupNames.indexOf(opening.groupId)
       let workersHired = 0
@@ -128,6 +132,8 @@ export default class GetOpeningsStatsCommand extends IncentivesCommandBase {
         }
       } 
     }
-    console.log(`relevantOpenings`,JSON.stringify(relevantOpenings, null, 4))
+    this.log(`relevantOpenings`,JSON.stringify(relevantOpenings, null, 4))
+    this.json('relevantOpenings', relevantOpenings)
+    this.json('save','openings')
   }
 }

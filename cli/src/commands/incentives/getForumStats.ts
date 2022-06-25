@@ -22,6 +22,7 @@ export default class GetForumInfo extends IncentivesCommandBase {
   }
 
   async run(): Promise<void> {
+    this.json('args',GetForumInfo.args)
     let { startBlockInput,endBlockInput } = this.parse(GetForumInfo).args
 
     const startBlock = parseInt(startBlockInput)
@@ -168,5 +169,10 @@ export default class GetForumInfo extends IncentivesCommandBase {
       this.log(`For category "${a[1]}" with ID ${a[0]}:`)
       this.log(`  - ${a[2]} threads, and ${a[3]} posts were made during the term`)
     }
+
+    this.json('categories', {all:allForumCategories, new: newCats, deleted: delCats, stats: categoryStats, ids: categoryIds})
+    this.json('threads', { created: threadCreatedEventsBetweenBlocks, moderated: threadModeratedEventsBetweenBlocks, deleted: threadDeletedEventsBetweenBlocks, moved: threadMovedEventsBetweenBlocks, updated: threadMetadataUpdatedEventsBetweenBlocks })
+    this.json('posts', { added: postAddedEventsBetweenBlocks, moderated: postModeratedEventsBetweenBlocks, deleted: deletedPosts, reactions: postReactedEventsBetweenBlocks, edited: editsToPosts, hidden: notVisiblePosts, editable: editablePosts})
+    this.json('save','forum')
   }
 }

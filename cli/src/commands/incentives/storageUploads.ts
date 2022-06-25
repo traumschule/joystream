@@ -29,6 +29,8 @@ export default class StorageUploads extends IncentivesCommandBase {
     ...IncentivesCommandBase.flags,
   }
   async run(): Promise<void> {
+    this.json('args', StorageUploads.args)
+    this.json('flags', StorageUploads.flags)
     let { startBlockInput,endBlockInput } = this.parse(StorageUploads).args
 
     const startBlock = parseInt(startBlockInput)
@@ -43,7 +45,11 @@ export default class StorageUploads extends IncentivesCommandBase {
     }
     console.log("startDateTime",startDateTime,startDateTime.toString(),startDateTime.toDateString())
     console.log("endDateTime",endDateTime,endDateTime.toString(),endDateTime.toDateString())
+    this.json('start', {block:startBlock, time: startDateTime})
+    this.json('end', {block:endBlock, time: endDateTime})
+
     const uploadsInRange = await this.getQNApi().failedUploadsBetweenTimestamps(`"${startDateTime}"`,`"${endDateTime}"`)
+    this.json('uploads', uploadsInRange)
     console.log(JSON.stringify(uploadsInRange,null,4))
     const total_uploads = uploadsInRange.length
     let successful_uploads = 0
@@ -62,5 +68,6 @@ export default class StorageUploads extends IncentivesCommandBase {
     this.log(`failed_uploads = ${failed_uploads}`)
     this.log(`Which gives:`)
     this.log(`UPLOAD_SCORE = ${UPLOAD_SCORE}`)
+    this.json('save','uploads')
   }
 }

@@ -62,6 +62,7 @@ export default class DistributionStats extends IncentivesCommandBase {
     const startBlock = parseInt(startBlockInput)
     const endBlock = parseInt(endBlockInput)
     const { minReplication,bagsRangeStart,bagsRangeEnd,latestVersion } = this.parse(DistributionStats).flags
+    this.json('minReplication', minReplication)
 
     const bags: string[] = []
     const bagIds: number[] = []
@@ -72,9 +73,12 @@ export default class DistributionStats extends IncentivesCommandBase {
 
     let startDateTime = await this.getTimestamps(startBlock)
     let endDateTime = await this.getTimestamps(endBlock)
+    this.json('start', {block: startBlock, bags: bagsRangeStart, time: startDateTime})
+    this.json('end', {block: endBlock, bags: bagsRangeEnd, time: endDateTime})
     console.log("startDateTime,endDateTime",startDateTime,endDateTime)
 
     const distributionBucketsData = await this.getQNApi().distributionBucketsData()
+    this.json('distributionBuckets', distributionBucketsData)
     for (let bucket of distributionBucketsData) {
       console.log("bucket.id, bucket.acceptingNewBags",bucket.id, bucket.acceptingNewBags)
     }
@@ -86,6 +90,7 @@ export default class DistributionStats extends IncentivesCommandBase {
     const notLatest:[number,string,string][] = []
     const notReached:[number,string,string][] = []
     const distributionBucketFamilyData = await this.getQNApi().distributionBucketFamilyData()
+    this.json('distributionBucketFamilies', distributionBucketFamilyData)
     for (let family of distributionBucketFamilyData) {
       const bucketsHolding:number[] = []
       for (let i=0; i<bags.length;i++) {
@@ -146,11 +151,17 @@ export default class DistributionStats extends IncentivesCommandBase {
       console.log("underReplicated",underReplicated)
       bagsOverview.push(a)
     }
+    this.json('workerData', workerData)
+    this.json('bagsOverview', bagsOverview)
+    this.json('latest', latest)
+    this.json('notReached', notReached)
+    this.json('notLatest', notLatest)
     this.log(`For the workers at block ${endBlockInput}, there were:`)
     this.log(`  - ${latest.length} nodes running version ${latestVersion}`)
     this.log(`  - ${notReached.length} nodes were either not up, or not displaying the version`)
     this.log(`  - ${notLatest.length} nodes running OTHER versions`)
     console.log(JSON.stringify(bagsOverview,null,4))
     console.log(JSON.stringify(workerData,null,4))
+    this.json('save', 'distribution')
   }
 }
