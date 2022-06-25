@@ -19,13 +19,13 @@ export default class ValidatorStats extends IncentivesCommandBase {
     const endBlock = parseInt(endBlockInput)
     const startBlockHash = await this.getBlockHash(startBlock)
     const endBlockHash = await this.getBlockHash(endBlock)
-    console.log('startBlock,startBlockHash', startBlock, startBlockHash.toString())
-    console.log('endBlock,endBlockHash', endBlock, endBlockHash.toString())
+    this.log('startBlock,startBlockHash', startBlock, startBlockHash.toString())
+    this.log('endBlock,endBlockHash', endBlock, endBlockHash.toString())
 
     const eras = await this.getEraRange(startBlockHash, endBlockHash)
     this.json('eras', eras)
     this.json('term', { startBlock, startBlockHash, endBlock, endBlockHash })
-    console.log('eras', eras[0], eras[1], eras)
+    this.log('eras', eras[0], eras[1], eras)
 
     const totalSum: AllEras = {
       firstStart: eras[0],
@@ -100,7 +100,7 @@ export default class ValidatorStats extends IncentivesCommandBase {
       }
     }
     this.json('totalSum', totalSum)
-    console.log(`totalSum`, JSON.stringify(totalSum, null, 4))
+    this.log(`totalSum`, JSON.stringify(totalSum, null, 4))
     this.json('save', 'validators')
   }
 }

@@ -30,11 +30,11 @@ export default class GetBountyInfo extends IncentivesCommandBase {
 
     const allBounties = await this.getAllBountyData(startBlock, endBlock)
     this.json('allBounties', allBounties)
-    console.log(allBounties)
+    this.log(allBounties)
 
     const bountyEarners = await this.getBountyEarners(startBlock, endBlock)
     this.json('bountyEarners', bountyEarners)
-    console.log(bountyEarners)
+    this.log(bountyEarners)
     this.json('save', 'bounties')
   }
 }

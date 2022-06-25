@@ -42,8 +42,8 @@ export default class StorageUploads extends IncentivesCommandBase {
       startDateTime = new Date(startBlockTimestamp)
       endDateTime = new Date(endBlockTimestamp)
     }
-    console.log('startDateTime', startDateTime, startDateTime.toString(), startDateTime.toDateString())
-    console.log('endDateTime', endDateTime, endDateTime.toString(), endDateTime.toDateString())
+    this.log('startDateTime', startDateTime, startDateTime.toString(), startDateTime.toDateString())
+    this.log('endDateTime', endDateTime, endDateTime.toString(), endDateTime.toDateString())
     this.json('start', { block: startBlock, time: startDateTime })
     this.json('end', { block: endBlock, time: endDateTime })
 
@@ -52,7 +52,7 @@ export default class StorageUploads extends IncentivesCommandBase {
       `"${endDateTime}"`
     )
     this.json('uploads', uploadsInRange)
-    console.log(JSON.stringify(uploadsInRange, null, 4))
+    this.log(JSON.stringify(uploadsInRange, null, 4))
     const total_uploads = uploadsInRange.length
     let successful_uploads = 0
     let failed_uploads = 0

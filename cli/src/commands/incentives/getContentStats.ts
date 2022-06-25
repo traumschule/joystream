@@ -125,9 +125,9 @@ export default class GetContentInfo extends IncentivesCommandBase {
         ) {
           newVideosCensored.push(video)
           if (censoredAfter / 1000 < 86400) {
-            console.log('good censor', censoredAfter, id)
+            this.log('good censor', censoredAfter, id)
           } else {
-            console.log('bad censor', censoredAfter, id)
+            this.log('bad censor', censoredAfter, id)
           }
         }
       }
@@ -155,10 +155,10 @@ export default class GetContentInfo extends IncentivesCommandBase {
         const timeStampCreated = new Date(channel.createdAt)
         const timeStampUpdated = new Date(channel.updatedAt)
         const censoredAfter = Math.abs(timeStampUpdated.getTime() - timeStampCreated.getTime())
-        console.log(censoredAfter)
-        //console.log(id)
-        //console.log("timeStampUpdated.getTime() > startDateTime && timeStampUpdated.getTime() < endDateTime",timeStampUpdated.getTime() > startDateTime, timeStampUpdated.getTime() < endDateTime)
-        //console.log("timeStampUpdated.getTime(), startDateTime, endDateTime",timeStampUpdated.getTime(), startDateTime, endDateTime)
+        this.log(censoredAfter)
+        //this.log(id)
+        //this.log("timeStampUpdated.getTime() > startDateTime && timeStampUpdated.getTime() < endDateTime",timeStampUpdated.getTime() > startDateTime, timeStampUpdated.getTime() < endDateTime)
+        //this.log("timeStampUpdated.getTime(), startDateTime, endDateTime",timeStampUpdated.getTime(), startDateTime, endDateTime)
         allChannelsCensored.push(channel)
         if (!oldChannelsCensored.includes(id)) {
           channelsNotCensoredBefore.push(channel)
@@ -208,51 +208,51 @@ export default class GetContentInfo extends IncentivesCommandBase {
       missingAssetsOrMetadata: { all: videosWithMissingAssetsOrMetadata, new: newVideosWithMissingAssetsOrMetadata },
     })
 
-    console.log('oldVideosCensored)', oldVideosCensored.length, oldVideosCensored)
+    this.log('oldVideosCensored)', oldVideosCensored.length, oldVideosCensored)
 
-    console.log('oldChannelsCensored)', oldChannelsCensored.length, oldChannelsCensored)
+    this.log('oldChannelsCensored)', oldChannelsCensored.length, oldChannelsCensored)
 
-    console.log('channelsUncensored)', channelsUncensored.length, channelsUncensored)
-    console.log('videosUncensored)', videosUncensored.length, videosUncensored)
+    this.log('channelsUncensored)', channelsUncensored.length, channelsUncensored)
+    this.log('videosUncensored)', videosUncensored.length, videosUncensored)
 
-    console.log('newVideos)', newVideos.length, newVideos)
-    console.log('newChannels)', newChannels.length, newChannels)
+    this.log('newVideos)', newVideos.length, newVideos)
+    this.log('newChannels)', newChannels.length, newChannels)
 
-    console.log(
+    this.log(
       'videosWithMissingAssetsOrMetadata)',
       videosWithMissingAssetsOrMetadata.length,
       videosWithMissingAssetsOrMetadata
     )
 
-    console.log(
+    this.log(
       'channelsWithMissingAssetsOrMetadata)',
       channelsWithMissingAssetsOrMetadata.length,
       channelsWithMissingAssetsOrMetadata
     )
 
-    console.log(`newVideosCensored`, newVideosCensored.length, JSON.stringify(newVideosCensored, null, 4))
-    console.log(
+    this.log(`newVideosCensored`, newVideosCensored.length, JSON.stringify(newVideosCensored, null, 4))
+    this.log(
       `newVideosWithMissingAssetsOrMetadata`,
       newVideosWithMissingAssetsOrMetadata.length,
       JSON.stringify(newVideosWithMissingAssetsOrMetadata, null, 4)
     )
 
-    console.log(`newChannelsCensored`, newChannelsCensored.length, JSON.stringify(newChannelsCensored, null, 4))
-    console.log(
+    this.log(`newChannelsCensored`, newChannelsCensored.length, JSON.stringify(newChannelsCensored, null, 4))
+    this.log(
       `newChannelsWithMissingAssetsOrMetadata`,
       newChannelsWithMissingAssetsOrMetadata.length,
       JSON.stringify(newChannelsWithMissingAssetsOrMetadata, null, 4)
     )
 
-    console.log(`allVideosCensored`, allVideosCensored.length, JSON.stringify(allVideosCensored, null, 4))
-    console.log(`allChannelsCensored`, allChannelsCensored.length, JSON.stringify(allChannelsCensored, null, 4))
+    this.log(`allVideosCensored`, allVideosCensored.length, JSON.stringify(allVideosCensored, null, 4))
+    this.log(`allChannelsCensored`, allChannelsCensored.length, JSON.stringify(allChannelsCensored, null, 4))
 
-    console.log(
+    this.log(
       `videosNotCensoredBefore`,
       videosNotCensoredBefore.length,
       JSON.stringify(videosNotCensoredBefore, null, 4)
     )
-    console.log(
+    this.log(
       `channelsNotCensoredBefore`,
       channelsNotCensoredBefore.length,
       JSON.stringify(channelsNotCensoredBefore, null, 4)

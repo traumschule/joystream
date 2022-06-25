@@ -56,7 +56,7 @@ export default class StorageMaintenance extends IncentivesCommandBase {
     })
     let startDateTime = await this.getTimestamps(startBlock)
     let endDateTime = await this.getTimestamps(endBlock)
-    console.log('startDateTime,endDateTime', startDateTime, endDateTime)
+    this.log('startDateTime,endDateTime', startDateTime, endDateTime)
 
     const bagsToIgnore: string[] = []
     if (ignoreBags) {
@@ -164,7 +164,7 @@ export default class StorageMaintenance extends IncentivesCommandBase {
       }
     }
     this.json('bagsUnderTreshold', bagsUnderTreshold)
-    console.log('New Bags', newBagIds.length)
+    this.log('New Bags', newBagIds.length)
     this.log(
       `Out of ${
         lastChannelId - firstChannelId

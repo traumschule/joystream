@@ -222,7 +222,7 @@ export default class CouncilSpending extends IncentivesCommandBase {
     let totalMemberSlashes = 0
     let totalNonMemberSlashes = 0
     let totalSlashes = 0
-    console.log(`|Group|Member Handle|Member Id|Worker Id|Reward Account | isActive | isLead | tJOY Earned |`)
+    this.log(`|Group|Member Handle|Member Id|Worker Id|Reward Account | isActive | isLead | tJOY Earned |`)
     for (let i = 0; i < spend.workersRewards.length; i++) {
       let totalGroupSpending = 0
       for (let n = 0; n < spend.rewardSpending[i].length; n++) {
@@ -232,14 +232,14 @@ export default class CouncilSpending extends IncentivesCommandBase {
 
       for (let n = 0; n < spend.workersRewards[i].length; n++) {
         const worker = spend.workersRewards[i][n]
-        console.log(
+        this.log(
           `|${spend.groups[i]}|${worker.memberHandle}|${worker.memberId}|${worker.workerId}|${worker.rewardAccount}|${worker.isActive}|${worker.isLead}|${worker.reward} |`
         )
       }
-      console.log(`|SUM ${spend.groups[i]}|${spend.workersRewards[i].length}|NA|NA|NA|NA|NA|${totalGroupSpending} |`)
+      this.log(`|SUM ${spend.groups[i]}|${spend.workersRewards[i].length}|NA|NA|NA|NA|NA|${totalGroupSpending} |`)
     }
-    console.log(``)
-    console.log('allGroupSpending', allGroupSpending)
+    this.log(``)
+    this.log('allGroupSpending', allGroupSpending)
     this.json('allGroupSpending', allGroupSpending)
 
     const eras = await this.getEraRange(startBlockHash, endBlockHash)
@@ -369,20 +369,20 @@ export default class CouncilSpending extends IncentivesCommandBase {
     for (let i = 0; i < earners.length; i++) {
       allNonWgEarnings += earners[i].earnings
       allNonWgEligebleEarnings += earners[i].eligibleEarnings
-      console.log(`|Context|Member Handle|Member Id|Notes|Reward Account|tJOY Earned |`)
+      this.log(`|Context|Member Handle|Member Id|Notes|Reward Account|tJOY Earned |`)
       for (let n = 0; n < earners[i].eligibleEarner.length; n++) {
         const earner = earners[i].eligibleEarner[n]
-        console.log(
+        this.log(
           `|${earners[i].context}|${earner.memberHandle}|${earner.memberId}|${earner.notes}|${earner.account}|${earner.earnings} |`
         )
       }
-      console.log(
+      this.log(
         `|SUM ${earners[i].context}|${earners[i].eligibleEarner.length}|NA|NA|${validatorEarners.eligibleEarnings} |`
       )
     }
-    console.log(``)
-    console.log('allNonWgEarnings', allNonWgEarnings)
-    console.log('allNonWgEligebleEarnings', allNonWgEligebleEarnings)
+    this.log(``)
+    this.log('allNonWgEarnings', allNonWgEarnings)
+    this.log('allNonWgEligebleEarnings', allNonWgEligebleEarnings)
     this.json('allNonWgEarnings', allNonWgEarnings)
     this.json('allNonWgEligebleEarnings', allNonWgEligebleEarnings)
     this.json('save', 'spending')

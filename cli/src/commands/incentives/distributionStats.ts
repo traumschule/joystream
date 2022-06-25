@@ -73,12 +73,12 @@ export default class DistributionStats extends IncentivesCommandBase {
     let endDateTime = await this.getTimestamps(endBlock)
     this.json('start', { block: startBlock, bags: bagsRangeStart, time: startDateTime })
     this.json('end', { block: endBlock, bags: bagsRangeEnd, time: endDateTime })
-    console.log('startDateTime,endDateTime', startDateTime, endDateTime)
+    this.log('startDateTime,endDateTime', startDateTime, endDateTime)
 
     const distributionBucketsData = await this.getQNApi().distributionBucketsData()
     this.json('distributionBuckets', distributionBucketsData)
     for (let bucket of distributionBucketsData) {
-      console.log('bucket.id, bucket.acceptingNewBags', bucket.id, bucket.acceptingNewBags)
+      this.log('bucket.id, bucket.acceptingNewBags', bucket.id, bucket.acceptingNewBags)
     }
 
     const bagsOverview: FamilyBucketsAndBags[] = []
@@ -119,9 +119,9 @@ export default class DistributionStats extends IncentivesCommandBase {
               endpointUrl,
               data,
             }
-            console.log('bucketData.data', bucketData.data)
-            //console.log("version",bucketData.data.version)
-            //console.log("versionversion",bucketData.data.version.version)
+            this.log('bucketData.data', bucketData.data)
+            //this.log("version",bucketData.data.version)
+            //this.log("versionversion",bucketData.data.version.version)
             workerData.push(bucketData)
             let version = bucketData.data.version
             if (version == latestVersion) {
@@ -145,8 +145,8 @@ export default class DistributionStats extends IncentivesCommandBase {
           underReplicated++
         }
       }
-      console.log('a', a.family, a.buckets.length)
-      console.log('underReplicated', underReplicated)
+      this.log('a', a.family, a.buckets.length)
+      this.log('underReplicated', underReplicated)
       bagsOverview.push(a)
     }
     this.json('workerData', workerData)
@@ -158,8 +158,8 @@ export default class DistributionStats extends IncentivesCommandBase {
     this.log(`  - ${latest.length} nodes running version ${latestVersion}`)
     this.log(`  - ${notReached.length} nodes were either not up, or not displaying the version`)
     this.log(`  - ${notLatest.length} nodes running OTHER versions`)
-    console.log(JSON.stringify(bagsOverview, null, 4))
-    console.log(JSON.stringify(workerData, null, 4))
+    this.log(JSON.stringify(bagsOverview, null, 4))
+    this.log(JSON.stringify(workerData, null, 4))
     this.json('save', 'distribution')
   }
 }

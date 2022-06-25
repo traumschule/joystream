@@ -47,7 +47,7 @@ export default class GetOpeningsStatsCommand extends IncentivesCommandBase {
       const groupsOfInterestParsed: string[] = []
       groupsOfInterest.split(',').forEach((a) => {
         groupsOfInterestParsed.push(a)
-        console.log(a)
+        this.log(a)
       })
       for (let workingGroup of AvailableGroups) {
         const indexOfGroup = groupsOfInterestParsed.indexOf(workingGroup.toString())

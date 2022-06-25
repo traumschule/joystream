@@ -71,7 +71,7 @@ with:`
       }
     }
     for (let i = 1; i < periods.length; i++) {
-      console.log('i, periods[i]', i, periods[i - 1], periods[i])
+      this.log('i, periods[i]', i, periods[i - 1], periods[i])
     }
     const allWorkingGroups = AvailableGroups
     const endBlockHash = await this.getBlockHash(termEnd)
@@ -86,7 +86,7 @@ with:`
         const firings = allWorkersByGroup.filter(
           (a) => a.endRange > periods[periods.length - 2] && a.endRange < periods[periods.length - 1]
         )
-        console.log('Group: Hires/Fires', workingGroup.toString(), hires.length, firings.length)
+        this.log('Group: Hires/Fires', workingGroup.toString(), hires.length, firings.length)
         const workersByGroup = allWorkersByGroup.filter((a) => a.endRange > periods[periods.length - 2])
         const leadAtEnd = await this.getLeadOfGroupAt(endBlockHash, workingGroup)
         const workersInGroup: [number, number, number, number, number][] = []
@@ -115,10 +115,10 @@ with:`
             100 - target
           }, is ${WORKER_OPPORTUNITIES_SCORE}`
         )
-        console.log(
+        this.log(
           `Given the set of workers active during the period: workerId, hiredInBlock, leftAtBlock (or last block of period), hiredInTerm, numberOfTermsInGroup`
         )
-        console.log(JSON.stringify(workersInGroup, null, 4))
+        this.log(JSON.stringify(workersInGroup, null, 4))
       }
     }
     this.json('leads', 'leads')
@@ -128,10 +128,10 @@ with:`
       this.log(
         `The LEAD_OPPORTUNITIES_SCORE is ${LEAD_OPPORTUNITIES_SCORE}, as the lead of the ${leads[0][0]} has had the position for the fewest amount of Council Periods`
       )
-      console.log(
+      this.log(
         `Given the set of leads active during the period, with: group, workerId, hiredInBlock, leftAtBlock (or last block of period), hiredInTerm, numberOfTermsInGroup`
       )
-      console.log(JSON.stringify(leads, null, 4))
+      this.log(JSON.stringify(leads, null, 4))
     }
     this.json('save', 'opportunities')
   }
